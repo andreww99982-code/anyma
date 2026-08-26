@@ -517,6 +517,17 @@
     return null;
   }
 
+  function isTrustedBandsintownUrl(href) {
+    try {
+      var parsed = new URL(href, window.location.origin);
+      var host = parsed.hostname.toLowerCase();
+      if (host !== 'bandsintown.com' && host !== 'www.bandsintown.com') return false;
+      return /^\/(?:e|t)\/\d+/.test(parsed.pathname);
+    } catch (err) {
+      return false;
+    }
+  }
+
   document.addEventListener('click', function (e) {
     var link = e.target.closest('a[href]');
     if (!link) return;
@@ -524,7 +535,7 @@
     var btnText = (link.textContent || '').trim().toUpperCase();
     if (btnText === 'SOLD OUT') return;
 
-    if (href.indexOf('bandsintown.com') !== -1) {
+    if (isTrustedBandsintownUrl(href)) {
       var internalEventId = resolveEventIdFromBandsintownLink(link, href);
       e.preventDefault();
       e.stopPropagation();
