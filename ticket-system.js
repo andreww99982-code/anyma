@@ -11,6 +11,7 @@
     'ibiza': {
       title: '[UNVRS] IBIZA',
       date:  'JUN 9 – SEP 15, 2026',
+      endDate: '2026-09-15',
       venue: 'Hï Ibiza, Ibiza, Spain',
       currency: 'EUR',
       symbol: '€',
@@ -23,6 +24,7 @@
     'vancouver': {
       title: 'ANYMA – VANCOUVER',
       date:  'AUG 29, 2026',
+      endDate: '2026-08-29',
       venue: 'Soulrise Festival, Vancouver, Canada',
       currency: 'CAD',
       symbol: 'C$',
@@ -34,6 +36,7 @@
     'istanbul': {
       title: 'ANYMA – ISTANBUL',
       date:  'SEP 12, 2026',
+      endDate: '2026-09-12',
       venue: 'Ataköy Marina Arena, Istanbul, Turkey',
       currency: 'EUR',
       symbol: '€',
@@ -45,6 +48,7 @@
     'milan': {
       title: 'ANYMA – MILAN',
       date:  'SEP 19, 2026',
+      endDate: '2026-09-19',
       venue: 'Ippodromo SNAI La Maura, Milan, Italy',
       currency: 'EUR',
       symbol: '€',
@@ -56,6 +60,7 @@
     'madrid': {
       title: 'ANYMA – MADRID',
       date:  'SEP 26, 2026',
+      endDate: '2026-09-26',
       venue: 'Caja Mágica, Madrid, Spain',
       currency: 'EUR',
       symbol: '€',
@@ -67,6 +72,7 @@
     'sydney': {
       title: 'ANYMA – SYDNEY',
       date:  'OCT 17, 2026',
+      endDate: '2026-10-17',
       venue: 'Domain, Sydney, Australia',
       currency: 'AUD',
       symbol: 'A$',
@@ -78,6 +84,7 @@
     'athens': {
       title: 'ANYMA – ATHENS',
       date:  'OCT 31, 2026',
+      endDate: '2026-10-31',
       venue: 'Terra Vibe Park, Athens, Greece',
       currency: 'EUR',
       symbol: '€',
@@ -89,6 +96,7 @@
     'mumbai': {
       title: 'ANYMA – MUMBAI',
       date:  'NOV 21, 2026',
+      endDate: '2026-11-21',
       venue: 'Mahalaxmi Race Course, Mumbai, India',
       currency: 'INR',
       symbol: '₹',
@@ -101,6 +109,7 @@
     'paris': {
       title: 'ANYMA – PARIS',
       date:  'DEC 12, 2026',
+      endDate: '2026-12-12',
       venue: 'Accor Arena, Paris, France',
       currency: 'EUR',
       symbol: '€',
@@ -114,6 +123,7 @@
     'mexicocity': {
       title: 'ANYMA – MEXICO CITY',
       date:  'AUG 22, 2026',
+      endDate: '2026-08-22',
       venue: 'Foro Sol, Mexico City, Mexico',
       currency: 'MXN',
       symbol: 'MX$',
@@ -122,10 +132,23 @@
         { id: 'vip', name: 'VIP',               desc: 'VIP pit',           price: 2500, avail: 200  }
       ]
     },
+    'chicago': {
+      title: 'ANYMA – CHICAGO',
+      date:  'SEP 6, 2026',
+      endDate: '2026-09-06',
+      venue: 'ARC Music Festival, Chicago, IL',
+      currency: 'USD',
+      symbol: '$',
+      tiers: [
+        { id: 'ga',  name: 'General Admission', desc: 'Festival grounds access', price: 120, avail: 2000 },
+        { id: 'vip', name: 'VIP',               desc: 'VIP viewing area',        price: 260, avail: 200  }
+      ]
+    },
     /* ── SPHERE LAS VEGAS ── */
     'sphere': {
       title: 'ANYMA AT THE SPHERE',
       date:  'DEC 31, 2025 – JAN 1, 2026 & residency',
+      endDate: '2026-12-31',
       venue: 'The Sphere, Las Vegas, NV',
       currency: 'USD',
       symbol: '$',
@@ -140,6 +163,7 @@
     'london': {
       title: 'ANYMA – LONDON',
       date:  'JUN 27 + 28, 2026',
+      endDate: '2026-06-28',
       venue: 'Finsbury Park, London, UK',
       currency: 'GBP',
       symbol: '£',
@@ -151,6 +175,7 @@
     'gdansk': {
       title: 'ANYMA – GDAŃSK',
       date:  'AUG 7 + 8, 2026',
+      endDate: '2026-08-08',
       venue: 'Gdańsk Open Air, Gdańsk, Poland',
       currency: 'PLN',
       symbol: 'zł',
@@ -164,6 +189,20 @@
   /* ── State ── */
   var currentEvent = null;
   var qty = {};
+  var visitorDetails = [];
+
+  function pruneExpiredEvents() {
+    var now = new Date();
+    Object.keys(EVENTS).forEach(function (id) {
+      var event = EVENTS[id];
+      if (!event || !event.endDate) return;
+      var endDate = new Date(event.endDate + 'T23:59:59');
+      if (isNaN(endDate.getTime())) return;
+      if (endDate < now) delete EVENTS[id];
+    });
+  }
+
+  pruneExpiredEvents();
 
   /* ── Build modal HTML once ── */
   function buildModal() {
@@ -181,6 +220,11 @@
         '<p class="atm-section-label">Select tickets</p>' +
         '<div id="atm-tiers"></div>' +
         '<div class="atm-divider"></div>' +
+        '<div id="atm-visitors-wrap" hidden>' +
+          '<p class="atm-section-label">Visitor details</p>' +
+          '<div id="atm-visitors"></div>' +
+        '</div>' +
+        '<div class="atm-divider" id="atm-visitors-divider" hidden></div>' +
         '<div class="atm-summary">' +
           '<p class="atm-summary-label">Total</p>' +
           '<p class="atm-total-amount" id="atm-total">—</p>' +
@@ -201,6 +245,7 @@
     });
 
     document.getElementById('atm-buy-btn').addEventListener('click', handlePayment);
+    document.getElementById('atm-visitors').addEventListener('input', handleVisitorInput);
   }
 
   /* ── Open modal for a given event ID ── */
@@ -210,6 +255,7 @@
     if (!currentEvent) { console.warn('Ticket system: unknown event', eventId); return; }
 
     qty = {};
+    visitorDetails = [];
     currentEvent.tiers.forEach(function (t) { qty[t.id] = 0; });
 
     /* Populate header */
@@ -277,8 +323,11 @@
   function updateSummary() {
     if (!currentEvent) return;
     var total = 0;
+    var totalTickets = 0;
     currentEvent.tiers.forEach(function (t) {
-      total += t.price * (qty[t.id] || 0);
+      var tierQty = qty[t.id] || 0;
+      total += t.price * tierQty;
+      totalTickets += tierQty;
     });
     var totalEl = document.getElementById('atm-total');
     var buyBtn  = document.getElementById('atm-buy-btn');
@@ -290,6 +339,7 @@
       totalEl.textContent = '—';
       buyBtn.disabled = true;
     }
+    syncVisitorFields(totalTickets);
   }
 
   function handlePayment() {
@@ -299,6 +349,7 @@
       total += t.price * (qty[t.id] || 0);
     });
     if (total <= 0) return;
+    if (!validateVisitors()) return;
     var paymentUrl = getPaymentUrl();
     if (!paymentUrl) {
       window.alert('Payment system URL is not configured.');
@@ -312,6 +363,75 @@
       '&currency=' + encodeURIComponent(currentEvent.currency);
     closeModal();
     window.location.href = nextUrl;
+  }
+
+  function handleVisitorInput(e) {
+    var input = e.target.closest('[data-visitor-index][data-field]');
+    if (!input) return;
+    var index = parseInt(input.getAttribute('data-visitor-index'), 10);
+    var field = input.getAttribute('data-field');
+    if (isNaN(index) || (field !== 'firstName' && field !== 'lastName')) return;
+    if (!visitorDetails[index]) visitorDetails[index] = { firstName: '', lastName: '' };
+    visitorDetails[index][field] = input.value || '';
+  }
+
+  function syncVisitorFields(totalTickets) {
+    var wrap = document.getElementById('atm-visitors-wrap');
+    var divider = document.getElementById('atm-visitors-divider');
+    var container = document.getElementById('atm-visitors');
+    if (!wrap || !divider || !container) return;
+
+    if (totalTickets <= 0) {
+      visitorDetails = [];
+      container.innerHTML = '';
+      wrap.hidden = true;
+      divider.hidden = true;
+      return;
+    }
+
+    while (visitorDetails.length < totalTickets) visitorDetails.push({ firstName: '', lastName: '' });
+    if (visitorDetails.length > totalTickets) visitorDetails = visitorDetails.slice(0, totalTickets);
+
+    container.innerHTML = visitorDetails.map(function (visitor, index) {
+      var first = visitor && visitor.firstName ? escHtml(visitor.firstName) : '';
+      var last = visitor && visitor.lastName ? escHtml(visitor.lastName) : '';
+      var number = index + 1;
+      return (
+        '<div class="atm-visitor-row">' +
+          '<p class="atm-visitor-label">Visitor ' + number + '</p>' +
+          '<div class="atm-visitor-fields">' +
+            '<input class="atm-visitor-input" type="text" placeholder="First name" autocomplete="given-name" data-visitor-index="' + index + '" data-field="firstName" value="' + first + '">' +
+            '<input class="atm-visitor-input" type="text" placeholder="Last name" autocomplete="family-name" data-visitor-index="' + index + '" data-field="lastName" value="' + last + '">' +
+          '</div>' +
+        '</div>'
+      );
+    }).join('');
+
+    wrap.hidden = false;
+    divider.hidden = false;
+  }
+
+  function validateVisitors() {
+    var totalTickets = 0;
+    currentEvent.tiers.forEach(function (t) {
+      totalTickets += qty[t.id] || 0;
+    });
+    if (totalTickets <= 0) return true;
+
+    for (var i = 0; i < totalTickets; i++) {
+      var visitor = visitorDetails[i] || {};
+      var first = (visitor.firstName || '').trim();
+      var last = (visitor.lastName || '').trim();
+      if (!first || !last) {
+        window.alert('Please fill in first and last name for each visitor.');
+        var missingInput = document.querySelector('[data-visitor-index="' + i + '"][data-field="' + (!first ? 'firstName' : 'lastName') + '"]');
+        if (missingInput) missingInput.focus();
+        return false;
+      }
+      visitorDetails[i] = { firstName: first, lastName: last };
+    }
+
+    return true;
   }
 
   function getPaymentUrl() {
@@ -354,12 +474,68 @@
     'weeztix':                'gdansk'
   };
 
+  var BANDSINTOWN_EVENT_MAP = {
+    '108468733': 'vancouver',
+    '107991644': 'ibiza',
+    '107991651': 'ibiza',
+    '107991658': 'ibiza',
+    '107947882': 'istanbul',
+    '107947885': 'milan',
+    '108502486': 'madrid',
+    '107947880': 'sydney',
+    '108769331': 'athens',
+    '107947889': 'mumbai',
+    '107947888': 'paris',
+    '108108296': 'chicago'
+  };
+
+  function resolveEventIdFromBandsintownLink(link, href) {
+    var idMatch = href.match(/bandsintown\.com\/(?:e|t)\/(\d+)/);
+    if (idMatch && BANDSINTOWN_EVENT_MAP[idMatch[1]]) return BANDSINTOWN_EVENT_MAP[idMatch[1]];
+
+    var parentEvent = link.closest('.bit-event');
+    if (!parentEvent) return null;
+    var eventText = (parentEvent.textContent || '').toLowerCase();
+    var fallbacks = [
+      { id: 'vancouver', keys: ['vancouver', 'soulrise'] },
+      { id: 'ibiza', keys: ['ibiza', 'sant rafel', 'unvrs', 'æden'] },
+      { id: 'istanbul', keys: ['istanbul', 'bakırköy'] },
+      { id: 'milan', keys: ['milan', 'rho'] },
+      { id: 'madrid', keys: ['madrid', 'arganda'] },
+      { id: 'sydney', keys: ['sydney'] },
+      { id: 'athens', keys: ['athens', 'athina'] },
+      { id: 'mumbai', keys: ['mumbai'] },
+      { id: 'paris', keys: ['paris', 'nanterre'] },
+      { id: 'chicago', keys: ['chicago', 'arc music festival'] }
+    ];
+    for (var i = 0; i < fallbacks.length; i++) {
+      var option = fallbacks[i];
+      for (var j = 0; j < option.keys.length; j++) {
+        if (eventText.indexOf(option.keys[j]) !== -1) return option.id;
+      }
+    }
+    return null;
+  }
+
   document.addEventListener('click', function (e) {
     var link = e.target.closest('a[href]');
     if (!link) return;
     var href = link.getAttribute('href') || '';
     var btnText = (link.textContent || '').trim().toUpperCase();
     if (btnText === 'SOLD OUT') return;
+
+    if (href.indexOf('bandsintown.com') !== -1) {
+      var internalEventId = resolveEventIdFromBandsintownLink(link, href);
+      e.preventDefault();
+      e.stopPropagation();
+      if (internalEventId && EVENTS[internalEventId]) {
+        openTicketModal(internalEventId);
+      } else {
+        window.alert('Tickets for this event are not available yet.');
+      }
+      return;
+    }
+
     for (var key in LINK_MAP) {
       if (href.indexOf(key) !== -1) {
         e.preventDefault();
