@@ -139,23 +139,27 @@
   background: #111;
   border-radius: 3px;
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
+  gap: 10px;
+  text-align: center;
 }
 #anyma-ticket-modal .atm-summary-label {
   font-size: 11px;
   letter-spacing: 0.15em;
   text-transform: uppercase;
   color: #888;
+  margin: 0;
 }
 #anyma-ticket-modal .atm-total-amount {
   font-size: 20px;
   font-weight: 700;
+  margin: 0;
 }
 #anyma-ticket-modal .atm-buy-btn {
   display: block;
   width: 100%;
-  margin-top: 16px;
+  margin-top: 0;
   padding: 15px;
   background: #fff;
   color: #000;

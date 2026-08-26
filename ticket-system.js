@@ -182,10 +182,8 @@
         '<div id="atm-tiers"></div>' +
         '<div class="atm-divider"></div>' +
         '<div class="atm-summary">' +
-          '<div>' +
-            '<p class="atm-summary-label">Total</p>' +
-            '<p class="atm-total-amount" id="atm-total">—</p>' +
-          '</div>' +
+          '<p class="atm-summary-label">Total</p>' +
+          '<p class="atm-total-amount" id="atm-total">—</p>' +
           '<button class="atm-buy-btn" id="atm-buy-btn" disabled>Proceed to Payment</button>' +
         '</div>' +
         '<p class="atm-note">Secure payment · Instant confirmation · No hidden fees</p>' +
@@ -301,8 +299,28 @@
       total += t.price * (qty[t.id] || 0);
     });
     if (total <= 0) return;
+    var paymentUrl = getPaymentUrl();
+    if (!paymentUrl) {
+      window.alert('Payment system URL is not configured.');
+      return;
+    }
+    var separator = paymentUrl.indexOf('?') === -1 ? '?' : '&';
+    var nextUrl =
+      paymentUrl +
+      separator +
+      'amount=' + encodeURIComponent(total) +
+      '&currency=' + encodeURIComponent(currentEvent.currency);
     closeModal();
-    window.location.href = 'https://example.com/?amount=' + total;
+    window.location.href = nextUrl;
+  }
+
+  function getPaymentUrl() {
+    var cfg = window.AnymaTicketConfig || {};
+    if (typeof cfg.paymentUrl === 'string') {
+      var url = cfg.paymentUrl.trim();
+      if (url) return url;
+    }
+    return null;
   }
 
   /* ── Helpers ── */
