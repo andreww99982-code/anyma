@@ -133,6 +133,48 @@
   text-align: center;
   font-weight: 600;
 }
+#atm-visitors {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.atm-visitor-row {
+  padding: 10px 0;
+  border-bottom: 1px solid #1a1a1a;
+}
+.atm-visitor-row:last-child {
+  border-bottom: none;
+}
+.atm-visitor-label {
+  margin: 0 0 8px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #888;
+}
+.atm-visitor-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.atm-visitor-input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #2d2d2d;
+  background: #0f0f0f;
+  color: #fff;
+  border-radius: 2px;
+  padding: 10px 12px;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+.atm-visitor-input::placeholder {
+  color: #666;
+}
+.atm-visitor-input:focus {
+  outline: none;
+  border-color: #fff;
+}
 #anyma-ticket-modal .atm-summary {
   margin-top: 24px;
   padding: 16px;
@@ -191,5 +233,8 @@
   }
   #anyma-ticket-modal .atm-event-title {
     font-size: 18px;
+  }
+  .atm-visitor-fields {
+    grid-template-columns: 1fr;
   }
 }
