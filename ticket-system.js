@@ -239,7 +239,11 @@
       tiersEl.appendChild(div);
     });
 
-    tiersEl.addEventListener('click', handleQtyClick);
+    /* Remove any prior listener before adding a fresh one */
+    var freshTiers = tiersEl.cloneNode(false);
+    while (tiersEl.firstChild) freshTiers.appendChild(tiersEl.firstChild);
+    tiersEl.parentNode.replaceChild(freshTiers, tiersEl);
+    freshTiers.addEventListener('click', handleQtyClick);
 
     updateSummary();
 
@@ -314,5 +318,38 @@
 
   /* ── Expose globally ── */
   window.openTicketModal = openTicketModal;
+
+  /* ── Global intercept: catch any residual external ticket links ── */
+  var LINK_MAP = {
+    'unvrs.com':              'ibiza',
+    'tixr.com':               'vancouver',
+    'passo.com.tr':           'istanbul',
+    'ticketone.it':           'milan',
+    'enterticket':            'madrid',
+    'untld.group':            'sydney',
+    'more.com/gr-en':         'athens',
+    'bookmyshow.com':         'mumbai',
+    'livenation.fr':          'paris',
+    'ticketmaster.com.mx':    'mexicocity',
+    'ticketmaster.com/anyma': 'sphere',
+    'kaboodle.co.uk':         'london',
+    'weeztix':                'gdansk'
+  };
+
+  document.addEventListener('click', function (e) {
+    var link = e.target.closest('a[href]');
+    if (!link) return;
+    var href = link.getAttribute('href') || '';
+    var btnText = (link.textContent || '').trim().toUpperCase();
+    if (btnText === 'SOLD OUT') return;
+    for (var key in LINK_MAP) {
+      if (href.indexOf(key) !== -1) {
+        e.preventDefault();
+        e.stopPropagation();
+        openTicketModal(LINK_MAP[key]);
+        return;
+      }
+    }
+  }, true);
 
 })();
