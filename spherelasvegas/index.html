@@ -3898,4 +3898,43 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=415817217436299&amp;ev=PageView&amp;noscript=1"></noscript>
 
 <script id="" text="" charset="" type="text/javascript" src="https://capi-automation.s3.us-east-2.amazonaws.com/public/client_js/capiParamBuilder/clientParamBuilder.bundle.js"></script>
-<script type="text/javascript" id="" charset="">clientParamBuilder.processAndCollectAllParams();</script></body></html>
+<script type="text/javascript" id="" charset="">clientParamBuilder.processAndCollectAllParams();</script>
+<link rel="stylesheet" href="../ticket-system.css">
+<script src="../ticket-system.js"></script>
+
+<script>
+/* Intercept any remaining external ticket links */
+document.addEventListener('click', function(e) {
+  var link = e.target.closest('a[href]');
+  if (!link) return;
+  var href = link.getAttribute('href') || '';
+  var mapping = {
+    'unvrs.com': 'ibiza',
+    'tixr.com': 'vancouver',
+    'passo.com.tr': 'istanbul',
+    'ticketone.it': 'milan',
+    'enterticket': 'madrid',
+    'untld.group': 'sydney',
+    'more.com/gr-en': 'athens',
+    'bookmyshow.com': 'mumbai',
+    'livenation.fr': 'paris',
+    'ticketmaster.com.mx': 'mexicocity',
+    'ticketmaster.com/anyma': 'sphere',
+    'kaboodle.co.uk': 'london',
+    'weeztix': 'gdansk'
+  };
+  var btnText = (link.textContent || '').trim().toUpperCase();
+  if (btnText === 'SOLD OUT') return;
+  for (var key in mapping) {
+    if (href.indexOf(key) !== -1) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (typeof openTicketModal === 'function') {
+        openTicketModal(mapping[key]);
+      }
+      return;
+    }
+  }
+}, true);
+</script>
+</body></html>
